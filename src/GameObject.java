@@ -14,6 +14,7 @@ public abstract class GameObject {
 
     public abstract void tick();
     public abstract void render(Graphics g);
+    public abstract Rectangle getBounds();
 
     public void setX(int x){
         this.x = x;
@@ -39,14 +40,14 @@ public abstract class GameObject {
     public void setVelX(int x){
         this.velX = x;
     }
-    public int setVelX(){
+    public int getVelX(){
         return velX;
     }
 
     public void setVelY(int y){
         this.velY = y;
     }
-    public int getVelX(){
+    public int getVelY(){
         return velY;
     }
 }
