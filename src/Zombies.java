@@ -4,48 +4,36 @@ import java.util.Random;
 public class Zombies extends GameObject {
 
     private Handler handler;
-    int accerX = 1, accerY = 1;
-    StopWatch timer = new StopWatch();
-    int lastTime = timer.intValue();
 
-    public Zombies(int x, int y, ID id, Handler handler) {
-        super(x, y, id);
+    public Zombies(int x, int y, ID id, int HP, Handler handler) {
+        super(x, y, id, HP);
         //TODO Auto-generated constructor stub
+        this.HP = 2;
         velX = 5;
-        velY = 5;
         this.handler = handler;
+    }
+
+    private boolean collision(){
+        for (int i = 0; i < handler.object.size(); i++){
+            GameObject temp = handler.object.get(i);
+            if (temp.getID() == ID.Plants || temp.getID() == ID.Peashooter){
+                if (getBounds().intersects(temp.getBounds()))
+                    return true;
+            }
+        }
+        return false;
     }
 
     @Override
     public void tick() {
         // TODO Auto-generated method stub
-        int currentTime = timer.intValue();
-        if (currentTime - lastTime == 2){
-            lastTime = currentTime;
-            if (velY < 0){
-                this.setVelY(this.getVelY() - 1);
-            }
-            else{
-                this.setVelY(this.getVelY() + 1);
-            }
-    
-            if (velX < 0){
-                this.setVelX(this.getVelX() - 1);
-            }
-            else{
-                this.setVelX(this.getVelX() + 1);
-            }
-        } 
-
-        x += velX;
-        y += velY;
-
-        if (y < 0 || y > Game.HEIGHT - 52) {
-            velY*=-1;
+        if(!collision()){
+            x -= velX;
         }
-        if (x < 0 || x > Game.WIDTH - 42){
-            velX*=-1;
-        } 
+
+        if (x <= 0 || this.HP == 0){
+            handler.removeObject(this);
+        }
     }
 
     @Override
@@ -60,4 +48,5 @@ public class Zombies extends GameObject {
         // TODO Auto-generated method stub
         return new Rectangle(x, y, 20, 20);
     }
+
 }

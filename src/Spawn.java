@@ -6,18 +6,27 @@ public class Spawn {
     Random r = new Random();
     private Handler handler;
     private HUD hud;
-    private int lastTime = timer.intValue();
+    private double lastTime = timer.getElapsedTimeInSeconds();
 
     public Spawn (Handler handler, HUD hud){
         this.handler = handler;
         this.hud = hud;
     }
 
+    public static double roundAvoid(double value, int places) {
+        double scale = Math.pow(10, places);
+        return Math.round(value * scale) / scale;
+    }
+
     public void tick(){
-        int currentTime = timer.intValue();
-        if (currentTime - lastTime == 5){
+        double currentTime = timer.getElapsedTimeInSeconds();
+        if (roundAvoid(currentTime - lastTime, 1) == 1.0){
             lastTime = currentTime;
-            handler.addObject(new Zombies(r.nextInt(Game.WIDTH - 42),r.nextInt(Game.HEIGHT - 52), ID.Zombies, handler));
+            handler.addObject(new Zombies(Game.WIDTH - 42,r.nextInt(5)*172 + 86, ID.Zombies, 5, handler));
         }
+    }
+
+    public void setTime(){
+        lastTime = timer.getElapsedTimeInSeconds();
     }
 }

@@ -1,33 +1,43 @@
 import java.awt.*;
 import java.awt.image.BufferStrategy;
-import java.util.Random;
-import java.util.function.DoubleToIntFunction;
+import java.io.IOException;
 
-import javax.swing.JLabel;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 
 public class Game extends Canvas implements Runnable {
     
-    public static final int WIDTH = 1000, HEIGHT = WIDTH/12*9;
+    public static final int WIDTH = 1540, HEIGHT = 860;
 
     private Thread thread;
     private boolean running = false;
 
-    HUD hp;
+    public HUD hp;
     private Handler handler;
-    Spawn spawner;
+    private SunSpawn sunSpawn;
+    private Spawn spawner;
+    private Menu menu;
+    private Music music;
+    private PlantSelector selector;
+
+    public STATE gameState = STATE.MENU;
     
-    public Game(){
+    public Game() throws UnsupportedAudioFileException, IOException, LineUnavailableException{
         handler = new Handler();
-        this.addKeyListener(new KeyInput(handler));
-        
-        new Window(WIDTH, HEIGHT, "Plants VS Zombies", this);
-
         hp = new HUD();
+        
+        selector = new PlantSelector(this, handler, hp);
+        sunSpawn = new SunSpawn(selector);
+        hp.setSunSpawn(sunSpawn);
         spawner = new Spawn(handler, hp);
+        menu = new Menu(this, handler, spawner, hp, selector);
+        this.addKeyListener(new KeyInput(handler));
+        this.addMouseListener(menu);
+        this.addMouseListener(selector);
+        this.addMouseMotionListener(sunSpawn);
+        music = new Music(this);
 
-        handler.addObject(new Plants(WIDTH / 2 - 32,HEIGHT / 2 - 32, ID.Plants, handler));
-        handler.addObject(new Zombies(1,1, ID.Zombies, handler));
-        handler.addObject(new SmartZombie(10, 10,ID.SmartZombie, handler));
+        new Window(WIDTH, HEIGHT, "Plants VS Zombies", this);
     }
 
     public static void main(String[] args) throws Exception{
@@ -78,7 +88,7 @@ public class Game extends Canvas implements Runnable {
 
             if (System.currentTimeMillis() - timer > 1000){
                 timer += 1000;
-                //System.out.println("FPS: " + frames);
+                System.out.println("FPS: " + frames);
                 frames = 0;
             }
         }
@@ -99,7 +109,14 @@ public class Game extends Canvas implements Runnable {
         g.fillRect(0,0,WIDTH,HEIGHT);
 
         handler.render(g);
-        hp.render(g);
+
+        if (gameState == STATE.GAME){
+            hp.render(g);
+            selector.render(g);
+        }
+        else {
+            menu.render(g);
+        }
 
         g.dispose();
         bs.show();
@@ -117,8 +134,11 @@ public class Game extends Canvas implements Runnable {
 
     private void tick() {
         handler.tick();
-        hp.tick();
-        spawner.tick();
+        if (gameState == STATE.GAME){
+            hp.tick();
+            spawner.tick();
+            selector.tick();
+        }
     }
 
 }

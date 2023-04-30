@@ -4,12 +4,17 @@ import java.util.Random;
 public class Plants extends GameObject {
 
     Random r = new Random();
+    StopWatch timer = new StopWatch();
+    double lastTime = timer.getElapsedTimeInSeconds();
+    Projectile shoot;
     Handler handler;
 
-    public Plants(int x, int y, ID id, Handler handler) {
-        super(x, y, id);
+    public Plants(int x, int y, ID id, int HP, Handler handler) {
+        super(x, y, id, HP);
+        this.HP = 10;
         //TODO Auto-generated constructor stub
         this.handler = handler;
+        shoot = new Projectile(this.x, this.y, ID.Protectile, ID.Peashooter, 0, handler);
     }
 
     @Override
@@ -20,8 +25,15 @@ public class Plants extends GameObject {
 
         x = Game.clamp(x, 0, Game.WIDTH - 47);
         y = Game.clamp(y, 0, Game.HEIGHT - 70);
-
+        
+        double currentTime = timer.getElapsedTimeInSeconds();
+        if (roundAvoid(currentTime - lastTime, 1) == 1.0){
+            lastTime = currentTime;
+            shoot.shoot(this.x, this.y, ID.Peashooter);
+        }
         collision();
+
+        if (this.HP == 0) handler.removeObject(this);
     }
 
     private void collision(){
@@ -32,7 +44,10 @@ public class Plants extends GameObject {
 
             if (temp.getID() == ID.Zombies || temp.getID() == ID.SmartZombie){
                 if (getBounds().intersects(temp.getBounds())){
-                    HUD.HP -= 2;
+                    handler.removeObject(temp);
+                    for (int j = 0; j < 2; j++){
+                        handler.addObject(new Zombies(r.nextInt(Game.WIDTH - 32), r.nextInt(Game.HEIGHT -40), ID.Zombies, 5, handler));
+                    }
                 }
 
             }

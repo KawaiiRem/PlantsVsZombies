@@ -6,8 +6,9 @@ public class SmartZombie extends GameObject {
     private Handler handler;
     private GameObject plant;
 
-    public SmartZombie(int x, int y, ID id, Handler handler) {
-        super(x, y, id);
+    public SmartZombie(int x, int y, ID id, int HP, Handler handler) {
+        super(x, y, id, HP);
+        this.HP = 3;
         //TODO Auto-generated constructor stub
         this.handler = handler;
         for (int i = 0; i < handler.object.size(); i++){
@@ -35,6 +36,8 @@ public class SmartZombie extends GameObject {
         if (x < 0 || x > Game.WIDTH - 42){
             velX*=-1;
         } 
+
+        if (HP == 0) handler.removeObject(this);
     }
 
     @Override

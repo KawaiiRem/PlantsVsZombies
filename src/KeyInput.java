@@ -22,10 +22,10 @@ public class KeyInput extends KeyAdapter {
             GameObject temp = handler.object.get(i);
 
             if (temp.getID() == ID.Plants){
-                if (key == KeyEvent.VK_W){temp.setVelY(-10); keyDown[0] = true;}
-                if (key == KeyEvent.VK_S){temp.setVelY(+10); keyDown[1] = true;}
-                if (key == KeyEvent.VK_A){temp.setVelX(-10); keyDown[2] = true;}
-                if (key == KeyEvent.VK_D){temp.setVelX(+10); keyDown[3] = true;}
+                if (key == KeyEvent.VK_W){temp.setVelY(-15); keyDown[0] = true;}
+                if (key == KeyEvent.VK_S){temp.setVelY(+15); keyDown[1] = true;}
+                if (key == KeyEvent.VK_A){temp.setVelX(-15); keyDown[2] = true;}
+                if (key == KeyEvent.VK_D){temp.setVelX(+15); keyDown[3] = true;}
             }
 
         }
