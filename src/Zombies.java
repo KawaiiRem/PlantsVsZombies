@@ -1,51 +1,69 @@
 import java.awt.*;
-import java.util.Random;
 
 public class Zombies extends GameObject {
 
     private Handler handler;
+    private StopWatch clock = new StopWatch();
+    protected double moveSpeed;
+    private String status = "";
+    private double duration;
 
     public Zombies(int x, int y, ID id, int HP, Handler handler) {
         super(x, y, id, HP);
-        //TODO Auto-generated constructor stub
-        this.HP = 2;
-        velX = 5;
+        this.HP = 5;
         this.handler = handler;
     }
 
     private boolean collision(){
-        for (int i = 0; i < handler.object.size(); i++){
-            GameObject temp = handler.object.get(i);
-            if (temp.getID() == ID.Plants || temp.getID() == ID.Peashooter){
-                if (getBounds().intersects(temp.getBounds()))
-                    return true;
+        for (int i = 0; i < handler.PList.size(); i++){
+            GameObject temp = handler.PList.get(i);
+            if (getBounds().intersects(temp.getBounds())){
+                return true;
             }
         }
         return false;
     }
 
+    public void getSlow(int duration){
+        status = "SLOW";
+        this.duration = duration + clock.getElapsedTimeInSeconds();
+        moveSpeed = velX/2.0;
+    }
+
     @Override
     public void tick() {
-        // TODO Auto-generated method stub
         if(!collision()){
-            x -= velX;
+            if ( !status.equals("") ){
+                if (status.equals("SLOW")){
+                    if (duration < clock.getElapsedTimeInSeconds()) moveSpeed = velX;
+                }
+            }
+            x -= moveSpeed;
         }
 
-        if (x <= 0 || this.HP == 0){
-            handler.removeObject(this);
+        if ( this.HP <= 0){
+            handler.removeZObject(this);
         }
+        if (this.getX() < 180 ){
+            Game.gameState = STATE.STATELOSE;
+        }
+        collision();
     }
 
     @Override
     public void render(Graphics g) {
-        // TODO Auto-generated method stub
-        g.setColor(Color.white);
-        g.fillRect(x, y, 20, 20);
+        if(!collision()){
+            g.drawImage(animation[3][aniIndex], this.x-50, this.y-50, 100, 100, null);
+            updateAnimationTick(3);
+        }
+        else{
+            g.drawImage(animation[4][aniIndex], this.x-50, this.y-50, 100, 100, null);
+            updateAnimationTick(4);
+        }
     }
 
     @Override
     public Rectangle getBounds() {
-        // TODO Auto-generated method stub
         return new Rectangle(x, y, 20, 20);
     }
 

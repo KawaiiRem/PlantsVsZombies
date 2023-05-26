@@ -1,4 +1,8 @@
 public enum STATE{
     MENU,
-    GAME;
+    GAME,
+    LEVEL,
+    STATEWIN,
+    STATELOSE,
+    PAUSED;
 }

@@ -8,18 +8,17 @@ public class Plants extends GameObject {
     double lastTime = timer.getElapsedTimeInSeconds();
     Projectile shoot;
     Handler handler;
+    protected int constant;
+    private double immuneTime = timer.getElapsedTimeInSeconds();
+    private boolean getHit = true;
 
     public Plants(int x, int y, ID id, int HP, Handler handler) {
         super(x, y, id, HP);
-        this.HP = 10;
-        //TODO Auto-generated constructor stub
         this.handler = handler;
-        shoot = new Projectile(this.x, this.y, ID.Protectile, ID.Peashooter, 0, handler);
+        shoot = new Projectile(this.x, this.y, ID.Protectile, this.id, 0, handler);
     }
 
-    @Override
     public void tick() {
-        // TODO Auto-generated method stub
         x += velX;
         y += velY;
 
@@ -27,45 +26,54 @@ public class Plants extends GameObject {
         y = Game.clamp(y, 0, Game.HEIGHT - 70);
         
         double currentTime = timer.getElapsedTimeInSeconds();
-        if (roundAvoid(currentTime - lastTime, 1) == 1.0){
+        if (roundAvoid(currentTime - lastTime, 1) >= 1.0){
             lastTime = currentTime;
-            shoot.shoot(this.x, this.y, ID.Peashooter);
+            shoot.shoot(this.x, this.y, this.getID(), this);
         }
         collision();
 
-        if (this.HP == 0) handler.removeObject(this);
+        if (this.HP == 0) handler.removePObject(this);
     }
 
-    private void collision(){
+    public void collision(){
 
-        for (int i = 0; i < handler.object.size(); i++){
+        for (int i = 0; i < handler.ZList.size(); i++){
 
-            GameObject temp = handler.object.get(i);
-
-            if (temp.getID() == ID.Zombies || temp.getID() == ID.SmartZombie){
-                if (getBounds().intersects(temp.getBounds())){
-                    handler.removeObject(temp);
-                    for (int j = 0; j < 2; j++){
-                        handler.addObject(new Zombies(r.nextInt(Game.WIDTH - 32), r.nextInt(Game.HEIGHT -40), ID.Zombies, 5, handler));
+            GameObject temp = handler.ZList.get(i);
+            if (getBounds().intersects(temp.getBounds())){
+                if (getHit){
+                    HP--;
+                    System.out.println("Ouch!");
+                    if (this.HP == 0){
+                        handler.removePObject(this);
+                    }
+                    getHit = false;
+                    immuneTime = timer.getElapsedTimeInSeconds();
+                }
+                else{
+                    double waitTime = timer.getElapsedTimeInSeconds();
+                    if ( roundAvoid(waitTime - immuneTime, 1) >= 0.5 ){
+                        getHit = true;
                     }
                 }
-
             }
         }
 
     }
 
+    public void setConstant(int constant){
+        this.constant = constant;
+    }
+
     @Override
     public void render(Graphics g) {
-        // TODO Auto-generated method stub
-        g.setColor(Color.blue);
-        g.fillRect(x, y, 32, 32);
+            g.drawImage(animation[constant][aniIndex], this.x-30, this.y-30, 100, 100, null);
+            updateAnimationTick(constant);
     }
 
     @Override
     public Rectangle getBounds() {
-        // TODO Auto-generated method stub
-        return new Rectangle(x, y, 32, 32);
+        return new Rectangle(x, y, 100, 100);
     }
     
 }

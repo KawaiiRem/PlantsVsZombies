@@ -1,11 +1,11 @@
 public enum ID {
     Plants(),
-    SmartZombie(),
     Peashooter(),
     Bucket_Zombie(),
     Protectile(),
-    PeaShooterProjectile(),
+    SlowPeashooter(),
     Sun(),
     Sunflower(),
-    Zombies();
+    Chilly(),
+    Zombies(), ChenAlterS3();
 }

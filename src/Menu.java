@@ -3,33 +3,20 @@ import java.awt.event.MouseAdapter;
 import java.awt.*;
 
 public class Menu extends MouseAdapter {
-    
-    private Game game;
-    private Handler handler;
-    private Spawn spawn;
-    private HUD hud;
-    private PlantSelector selector;
-
-    public Menu (Game game, Handler handler, Spawn spawn, HUD hud, PlantSelector selector){
-        this.game = game;
-        this.handler = handler;
-        this.spawn = spawn;
-        this.hud = hud;
-        this.selector = selector;
+    public Menu (){
     }
 
     public void mousePressed (MouseEvent e){
         int myX = e.getX();
         int myY = e.getY();
         
-        if (mouseOver(myX, myY, Game.WIDTH/2 - 175, 250, 350, 100)){
-            game.gameState = STATE.GAME;
-            spawn.setTime();
-            hud.setTime();
-            selector.setTime();
-        }
-        if (mouseOver(myX, myY, Game.WIDTH/2 - 175, 650, 350, 100)){
-            System.exit(1);
+        if(Game.gameState == STATE.MENU){
+            if (mouseOver(myX, myY, Game.WIDTH/2 - 175, 250, 350, 100)){
+                Game.gameState = STATE.LEVEL;
+            }
+            if (mouseOver(myX, myY, Game.WIDTH/2 - 175, 650, 350, 100)){
+                System.exit(1);
+            }
         }
     }
 

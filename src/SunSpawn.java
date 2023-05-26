@@ -2,27 +2,25 @@ import java.util.Random;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionListener;
 
 public class SunSpawn extends MouseAdapter{
 
     private Random r = new Random();
     private StopWatch timer = new StopWatch();
     private double lastTime = timer.getElapsedTimeInSeconds();
-    private Handler sun = new Handler();
+    private Handler sun;
     private PlantSelector plantSelector;
+    private SoundEffect sunPickup;
 
 
-    public SunSpawn(PlantSelector plantSelector){
+    public SunSpawn(PlantSelector plantSelector, Handler sun){
         this.plantSelector = plantSelector;
+        this.sun = sun;
+        sunPickup = new SoundEffect("src\\ka-ching.wav");
     }
 
     public void addSun(int x, int y, ID id ,int HP, Handler sun){
-        sun.addObject(new Sun(x, y, id, 1, this.sun));
-    }
-
-    public Handler getSunHandler(){
-        return this.sun;
+        sun.addSObject(new Sun(x, y, id, 1, this.sun));
     }
 
     public static double roundAvoid(double value, int places) {
@@ -32,9 +30,9 @@ public class SunSpawn extends MouseAdapter{
 
     public void tick(){
         double currentTime = timer.getElapsedTimeInSeconds();
-        if (roundAvoid(currentTime - lastTime, 1) == 2.0){
+        if (roundAvoid(currentTime - lastTime, 1) >= 2.0){
             lastTime = currentTime;
-            sun.addObject(new Sun(r.nextInt(1140) + 200, 0, ID.Sun, 1, sun));
+            sun.addSObject(new Sun(r.nextInt(1140) + 200, 0, ID.Sun, 1, sun));
         }
         sun.tick();
     }
@@ -48,12 +46,13 @@ public class SunSpawn extends MouseAdapter{
     }
 
     public void mouseMoved(MouseEvent e){
-        for (int i = 0; i < this.sun.object.size(); i++){
-            int sunX = this.sun.object.get(i).getX();
-            int sunY = this.sun.object.get(i).getY();
+        for (int i = 0; i < this.sun.SList.size(); i++){
+            int sunX = this.sun.SList.get(i).getX();
+            int sunY = this.sun.SList.get(i).getY();
             if (e.getX() > sunX && e.getX() < sunX + 20){
                 if (e.getY() > sunY && e.getY() < sunY +20){
-                    this.sun.object.remove(i);
+                    sunPickup.play();
+                    this.sun.SList.remove(i);
                     plantSelector.setCountSun(25);
                 }
             }

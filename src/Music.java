@@ -7,10 +7,8 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
 public class Music {
-    private Game game;
-    public Music(Game game) throws UnsupportedAudioFileException, IOException, LineUnavailableException{
-        this.game = game;
-        File file = new File("C:\\Users\\vuduc\\.vscode\\PlantsVsZombies\\src\\ArknightsCC10.wav");
+    public Music() throws UnsupportedAudioFileException, IOException, LineUnavailableException{
+        File file = new File("src\\ArknightsCC10.wav");
         AudioInputStream audioStream = AudioSystem.getAudioInputStream(file);
         Clip clip = AudioSystem.getClip();
         clip.open(audioStream);

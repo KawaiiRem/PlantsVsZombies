@@ -1,16 +1,18 @@
 
-import org.w3c.dom.css.RGBColor;
-//
+
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.InputStream;
 import java.awt.event.MouseAdapter;
 import java.awt.*;
-import java.util.Random;
+
+import javax.imageio.ImageIO;
 
 public class PlantSelector extends MouseAdapter {
     StopWatch timer = new StopWatch();
     private double lastTime = timer.getElapsedTimeInSeconds();
     private ID[] selectedPlant = new ID[7];
-    private Game game;
     private Handler handler;
     private ID nextPlant;
     private int nextSlot, nextSunCost;
@@ -18,21 +20,26 @@ public class PlantSelector extends MouseAdapter {
     private int[][] checkEmpty = new int[10][6];
     public static int countSun=200;
     private double[] cooldownPlant = new double[]{0,0,0,0,0,0,0};
-    private double time;
+    private double time=0;
     private boolean valid = false;
     private HUD hud;
+    private BufferedImage card;
+    private BufferedImage selectCard[];
 
-    public PlantSelector(Game game, Handler handler, HUD hud) {
-        this.game = game;
+    public PlantSelector(Handler handler, HUD hud) {
         this.handler = handler;
         this.hud = hud;
-        selectedPlant = new ID[]{ID.Sunflower, ID.Peashooter, ID.Peashooter, ID.Peashooter, ID.Peashooter, ID.Peashooter, ID.Peashooter};
+        selectedPlant = new ID[]{ID.Sunflower, ID.Peashooter, ID.SlowPeashooter, ID.Chilly, ID.Peashooter, ID.Peashooter, ID.Peashooter};
+        importImg();
+        loadAnimation();
     }
 
     private void countDownTime() {
-        if(game.gameState==STATE.GAME){
-            double currentTime = timer.getElapsedTimeInSeconds();
-            if (roundAvoid(currentTime - lastTime, 1) == 1){
+        double currentTime = timer.getElapsedTimeInSeconds();
+
+        if(Game.gameState==STATE.GAME){
+            
+            if (roundAvoid(currentTime - lastTime, 1) >= 1){
                 lastTime=currentTime;
                 time=roundAvoid(time+1,1);
 
@@ -67,54 +74,83 @@ public class PlantSelector extends MouseAdapter {
         }
     }
     public void mousePressed(MouseEvent e) {
-        if (game.gameState == STATE.GAME) {
+        if (Game.gameState == STATE.GAME) {
             int mx = e.getX();
             int my = e.getY();
 
-            if (mouseOver(mx, my, 0, 0, 180, 120) && countSun>=30 && cooldownPlant[0] ==0) {
+            if (mouseOver(mx, my, 0, 0, 180, 120) && countSun>=50 && cooldownPlant[0] ==0) {
                 nextPlant = selectedPlant[0];
                 nextSlot = 0;
                 slotPlanted[0] = 1;
-                nextSunCost = 30;
-            } else if (mouseOver(mx, my, 0, 120, 180, 120) && countSun>=70 && cooldownPlant[1] ==0) {
+                nextSunCost = 50;
+            } else if (mouseOver(mx, my, 0, 120, 180, 120) && countSun>=100 && cooldownPlant[1] ==0) {
                 nextPlant = selectedPlant[1];
                 nextSlot = 1;
                 slotPlanted[1] = 1;
-                nextSunCost =70;
+                nextSunCost =100;
 
-            } else if (mouseOver(mx, my, 0, 120 * 2, 180, 120) && countSun>=70 && cooldownPlant[2] ==0) {
+            } else if (mouseOver(mx, my, 0, 120 * 2, 180, 120) && countSun>=125 && cooldownPlant[2] ==0) {
                 nextPlant = selectedPlant[2];
                 nextSlot = 2;
                 slotPlanted[2] = 1;
-                nextSunCost =70;
+                nextSunCost =125;
 
-            } else if (mouseOver(mx, my, 0, 120 * 3, 180, 120)) {
+            } else if (mouseOver(mx, my, 0, 120 * 3, 180, 120) && countSun>=75 && cooldownPlant[3] ==0) {
                 nextPlant = selectedPlant[3];
                 nextSlot = 3;
                 slotPlanted[3] = 1;
-                nextSunCost =70;
+                nextSunCost =75;
                 
-            } else if (mouseOver(mx, my, 0, 120 * 4, 180, 120)) {
+            } else if (mouseOver(mx, my, 0, 120 * 4, 180, 120) && countSun>=100 && cooldownPlant[4] ==0) {
                 nextPlant = selectedPlant[4];
-                nextSlot = 4;
+                nextSlot = 1;
                 slotPlanted[4] = 1;
-                nextSunCost =70;
-            } else if (mouseOver(mx, my, 0, 120 * 5, 180, 120)) {
+                nextSunCost =100;
+
+            } else if (mouseOver(mx, my, 0, 120 * 5, 180, 120) && countSun>=100 && cooldownPlant[5] ==0) {
                 nextPlant = selectedPlant[5];
                 nextSlot = 5;
                 slotPlanted[5] = 1;
-                nextSunCost =70;
-            } else if (mouseOver(mx, my, 0, 120 * 6, 180, 120)) {
+                nextSunCost =100;
+            } else if (mouseOver(mx, my, 0, 120 * 6, 180, 120) && countSun>=100 && cooldownPlant[5] ==0) {
                 nextPlant = selectedPlant[6];
                 nextSlot = 6;
                 slotPlanted[6] = 1;
-                nextSunCost =70;
+                nextSunCost =100;
+            }
+        }
+    }
+
+    public void update(){
+        int hereX = 0, hereY = 0;
+        int thisI = 0, thisJ = 0;
+        for (int j = 0; j < 5; j++) {
+            for (int i = 0; i < 9; i++) {    
+                boolean check = false;
+                for (int k = 0 ; k < handler.PList.size(); k++){
+                    hereX = 180 + i * 140 + 70;
+                    hereY = 172 * j + 86;
+                    thisI = i;
+                    thisJ = j;
+                    Plants temp = handler.PList.get(k);
+                    if (temp.getBounds().intersects(new Rectangle(hereX, hereY, 5, 5))){
+                        checkEmpty[thisI][thisJ] = 0;
+                        check = true;
+                    }
+                }
+                if (check){
+                    checkEmpty[thisI][thisJ] = 1;
+                }
+                else {
+                    checkEmpty[thisI][thisJ] = 0;
+                }
             }
         }
     }
 
     public void mouseReleased(MouseEvent e) {
-        if (game.gameState == STATE.GAME) {
+        if (Game.gameState == STATE.GAME) {
+            update();
             int mx = e.getX();
             int my = e.getY();
 
@@ -136,17 +172,25 @@ public class PlantSelector extends MouseAdapter {
             valid = false;
 
             if (nextPlant != null && checkEmpty[thisI][thisJ] == 0 && hereX + hereY != 0) {
-                if(nextPlant == selectedPlant[0]){
-                    handler.addObject(new Sunflower(hereX, hereY, ID.Plants,5, handler, hud.getSunSpawn()));
+                if(nextPlant == ID.Sunflower){
+                    handler.addPObject(new Sunflower(hereX, hereY, ID.Sunflower,5, handler, hud.getSunSpawn()));
                     valid = true;
+                    System.out.println("sun");
                 }
-                else if(nextPlant == selectedPlant[1]){
-                    handler.addObject(new Plants(hereX,hereY,ID.Plants,5,handler));
+                else if(nextPlant == ID.Peashooter){
+                    handler.addPObject(new Peashooter(hereX,hereY,ID.Peashooter,5,handler));
                     valid = true;
+                    System.out.println("pea");
                 }
-                else if(nextPlant == selectedPlant[2]){
-                    handler.addObject(new Peashooter(hereX,hereY,ID.Plants,5,handler));
+                else if(nextPlant == ID.SlowPeashooter){
+                    handler.addPObject(new SlowPeashooter(hereX,hereY,ID.SlowPeashooter,5,handler));
                     valid = true;
+                    System.out.println("plants");
+                }
+                else if(nextPlant == ID.Chilly){
+                    handler.addPObject(new Chilly(hereX,hereY,ID.Chilly,5,handler));
+                    valid = true;
+                    System.out.println("chilly");
                 }
 
                 nextPlant = null;
@@ -189,31 +233,33 @@ public class PlantSelector extends MouseAdapter {
         Font mainFont = new Font("Times New Roman", Font.BOLD, 32);
         g.setFont(mainFont);
         g.setColor(Color.white);
-        g.drawString("Sun: "+countSun +" Time: "+time,185,30);
+        g.drawString("Sun: "+countSun,185,30);
         g.drawRect(180, 40, 150, 1);
 //        sunflower
-        if((countSun>=30) && (cooldownPlant[0]==0)){
-            g.setColor(Color.orange);
-            g.fillRect(0,0,180,120);
+        if((countSun>=50) && (cooldownPlant[0]==0)){
+            g.drawImage(selectCard[0], 0, 0, null);
         }else{
             g.drawString(cooldownPlant[0]+"s",0,120);
         }
 
 //      Peashooter
-        if((countSun>=70) && (cooldownPlant[1]==0)){
-            g.setColor(Color.green);
-            g.fillRect(0,120,180,120);
+        if((countSun>=100) && (cooldownPlant[1]==0)){
+            g.drawImage(selectCard[1], 0, 120, null);
         }else{
             g.drawString(cooldownPlant[1]+"s",0,240);
         }
-//      Plants
-        if((countSun>=70) && (cooldownPlant[2]==0)){
-            g.setColor(Color.blue);
-            g.fillRect(0,120 * 2,180,120);
+//      SlowPeashooter
+        if((countSun>=125) && (cooldownPlant[2]==0)){
+            g.drawImage(selectCard[2], 0, 240, null);
         }else{
             g.drawString(cooldownPlant[2]+"s",0,360);
         }
-
+//      Chilly
+        if((countSun>=75) && (cooldownPlant[3]==0)){
+            g.drawImage(selectCard[3], 0, 360, null);
+        }else{
+            g.drawString(cooldownPlant[3]+"s",0,480);
+        }
 //      border
         g.setColor(Color.white);
 
@@ -237,6 +283,28 @@ public class PlantSelector extends MouseAdapter {
     }
 
     public void setCountSun(int sun){
-        this.countSun += sun;
+        countSun += sun;
+    }
+
+    protected void importImg(){
+        InputStream PlantSelect = getClass().getResourceAsStream("/PlantSelect.png");
+
+        try {
+            card = ImageIO.read(PlantSelect);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try{
+                PlantSelect.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    private void loadAnimation(){
+        selectCard = new BufferedImage[4];
+        for(int j = 0; j < selectCard.length; j++){
+            selectCard[j] = card.getSubimage(j*180, 0 ,180,120);
+        }
     }
 }
