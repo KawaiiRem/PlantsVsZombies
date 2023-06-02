@@ -12,7 +12,7 @@ public abstract class GameObject {
     protected double velX, velY;
     protected double HP;
     protected static BufferedImage[][] animation;
-    protected static BufferedImage img;
+    protected static BufferedImage img, chillyFire;
     protected static BufferedImage bullet;
     protected static BufferedImage sunFall;
     protected static BufferedImage lawnmower;
@@ -43,12 +43,15 @@ public abstract class GameObject {
         InputStream is2 = getClass().getResourceAsStream("/bullet.png");
         InputStream is3 = getClass().getResourceAsStream("/sun.png");
         InputStream is4 = getClass().getResourceAsStream("/lawnmower.png");
+        InputStream is5 = getClass().getResourceAsStream("/ChilyFire.png");
 
         try {
             img = ImageIO.read(is);
             bullet = ImageIO.read(is2);
             sunFall = ImageIO.read(is3);
             lawnmower = ImageIO.read(is4);
+            chillyFire = ImageIO.read(is5);
+
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
